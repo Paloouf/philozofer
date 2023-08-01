@@ -6,80 +6,86 @@
 /*   By: ltressen <ltressen@student.42perpignan.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 10:35:57 by ltressen          #+#    #+#             */
-/*   Updated: 2023/07/31 16:42:40 by ltressen         ###   ########.fr       */
+/*   Updated: 2023/08/01 16:34:08 by ltressen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-void	eating(t_data *data)
+long	get_time()
 {
-	int	tid;
+	struct timeval	tv;
 
-	tid = data->phil->p_num;
-	if (tid == 0)
-	{
-		pthread_mutex_unlock(&data->fork[tid].f_ID);
-		pthread_mutex_unlock(&data->fork[data->num_of_phil - 1].f_ID);
-	}
-	else
-	{
-		pthread_mutex_unlock(&data->fork[tid].f_ID);
-		pthread_mutex_unlock(&data->fork[tid - 1].f_ID);
-	}
-	data->phil->eat_status = 1;
-	data->phil->fork_status = 0;
-	status_message(data, data->i);
-	data->phil->eat_status = 0;
-
+	gettimeofday(&tv, NULL);
+	return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
 }
 
-void	forquetta(t_data *data)
+void	ft_usleep(int ms)
 {
-	int	tid;
+	long int	time;
 
-	tid = data->phil->p_num;
-	//printf("%d\n", tid);
-	if (tid == 0)
-	{
-		pthread_mutex_lock(&data->fork[tid].f_ID);
-		pthread_mutex_lock(&data->fork[data->num_of_phil - 1].f_ID);
-	}
-	else
-	{
-		pthread_mutex_lock(&data->fork[tid].f_ID);
-		pthread_mutex_lock(&data->fork[tid - 1].f_ID);
-	}
-	data->phil->fork_status = 1;
-	status_message(data, data->i);
+	time = get_time();
+	while (get_time() - time < ms)
+		usleep(ms / 10);
 }
 
+void	mangiare(t_philo *philo)
+{
+	philo->eat_status = 1;
+	pthread_mutex_lock(&philo->fork_l);
+	status_message(philo, " has taken a fork\n");
+	rip_timer(philo);
+	pthread_mutex_lock(philo->fork_r);
+	rip_timer(philo);
+	status_message(philo, " has taken a fork\n");
+	status_message(philo, " is manging\n");
+	philo->eat_count++;
+	rip_timer(philo);
+	ft_usleep(philo->info->time_to_eat);
+	philo->time_since_eat = get_time();
+	rip_timer(philo);
+	pthread_mutex_unlock(&philo->fork_l);
+	pthread_mutex_unlock(philo->fork_r);
+	rip_timer(philo);
+	status_message(philo, " is dodoing\n");
+	rip_timer(philo);
+	ft_usleep(philo->info->time_to_sleep);
+	rip_timer(philo);
+	status_message(philo, " is pensing\n");
+}
+
+void	rip_timer(t_philo *philo)
+{
+	philo->rip_timer = philo->info->time_to_die - (get_time() - philo->info->start_time);
+	if (get_time() - philo->time_since_eat > philo->info->time_to_die)
+	{
+		philo->info->phil[philo->p_num].is_dead = 1;
+		status_message(philo, "is kill\n");
+		ft_exit(philo->info);
+	}
+}
 //fonction que le philo doit suivre pour manger, dormir, penser et (ne pas) mourir.
-void	*loop(t_data *data)
+void	*loop(t_philo *phil)
 {
-	pthread_t tid;
+	t_philo	*philo;
 
-	printf("th_id : %ld\n", data->phil[data->i].th_ID);
-	tid = pthread_self();
-	printf("tid : %ld\n", tid);
-	printf("%d\n", data->phil[data->i].p_num);
-	if (1)//data->phil->fork_status == 0 && data->num_of_phil > 1)
+	philo = (t_philo *)phil;
+	if (philo->p_num % 2 == 0)
+		ft_usleep(philo->info->time_to_eat / 10);
+	while (1)
 	{
-		forquetta(data);
+		rip_timer(philo);
+		mangiare(philo);
+		rip_timer(philo);
 	}
-	if (data->phil->fork_status == 1 && data->phil->eat_status == 0 && data->time_to_eat > 0)
-	{
-		eating(data);
-	}
+	philo->is_dead = 1;
 	return (NULL);
 }
 
 void	init_params(t_data *data, int argc, char **argv)
 {
-	struct timeval time;
-
-	gettimeofday(&time, NULL);
-	data->start_time = time.tv_sec * 1000 + time.tv_usec / 1000;
+	pthread_mutex_init(&data->print, NULL);
+	data->start_time = get_time();
 	data->num_of_phil = ft_atoi(argv[1]);
 	data->time_to_die = ft_atoi(argv[2]);
 	data->time_to_eat = ft_atoi(argv[3]);
@@ -87,7 +93,6 @@ void	init_params(t_data *data, int argc, char **argv)
 	if (argc == 6)
 		data->win_con = ft_atoi(argv[5]);
 	data->phil = malloc(sizeof(t_philo) * data->num_of_phil);
-	data->fork = malloc(sizeof(t_fork) * data->num_of_phil);
 }
 
 void	init_philos(t_data *data)
@@ -95,58 +100,70 @@ void	init_philos(t_data *data)
 	int	i;
 
 	i = 0;
-	data->i = 0;
 	while (i < data->num_of_phil)
 	{
 		data->phil[i].p_num = i;
 		data->phil[i].eat_status = 0;
+		data->phil[i].fork_r = NULL;
+		data->phil[i].info = data;
+		data->phil[i].eat_count = 0;
+		data->phil[i].time_since_eat = get_time();
 		data->phil[i].fork_status = 0;
 		data->phil[i].sleep_status = 0;
 		data->phil[i].think_status = 0;
 		data->phil[i].is_dead = 0;
-		pthread_create(&data->phil[data->i].th_ID, NULL, (void *)loop, data);
-		pthread_join(data->phil[data->i].th_ID, NULL);
-		data->i++;
-		usleep(300);
+		pthread_mutex_init(&data->phil[i].fork_l, NULL);
+		if (i == data->num_of_phil - 1)
+			data->phil[i].fork_r = &data->phil[0].fork_l;
+		else
+			data->phil[i].fork_r = &data->phil[i + 1].fork_l;
+		pthread_create(&data->phil[i].th_ID, NULL, (void *)loop, &data->phil[i]);
 		i++;
 	}
 	i = 0 ;
 	while (i < data->num_of_phil)
-		printf("tid : %ld\n", data->phil[i++].th_ID);
+		pthread_join(data->phil[i++].th_ID, NULL);
 }
 
-void	init_forks(t_data *data)
+int	is_dead(t_data *data)
 {
 	int	i;
 
 	i = 0;
 	while (i < data->num_of_phil)
 	{
-		data->fork[i].f_num = i;
-		pthread_mutex_init(&data->fork[i].f_ID, NULL);
-		usleep(300);
+		if (data->phil[i].is_dead)
+			return (0);
 		i++;
 	}
+	return (1);
+}
+
+void	ft_exit(t_data *data)
+{
+	int	i;
+
+	i = 0;
+	while (i < data->num_of_phil)
+	{
+		pthread_detach(data->phil[i].th_ID);
+		i++;
+	}
+	free(data->phil);
+	exit(0);
 }
 
 int main(int argc, char **argv)
 {
 	t_data	data;
-	int	i;
 
-	i = 0;
 	if (argc == 5 || argc == 6)
 		init_params(&data, argc, argv);
 	else
 		return (printf("Usage: -number of philosophers -time_to_die -time_to_eat -time_to_sleep -[number of times to eat]\n"), 0);	
-	init_forks(&data);
 	init_philos(&data);
-	while (i < data.num_of_phil)
-	{
-		pthread_detach(data.phil[i].th_ID);
-		i++;
-	}
-	free(data.phil);
-	free(data.fork);
+	while (1 > 0)
+		if (!is_dead(&data))
+			ft_exit(&data);
 	return (0);
 }

@@ -6,7 +6,7 @@
 /*   By: ltressen <ltressen@student.42perpignan.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 08:57:52 by ltressen          #+#    #+#             */
-/*   Updated: 2023/07/31 16:28:09 by ltressen         ###   ########.fr       */
+/*   Updated: 2023/08/01 15:56:30 by ltressen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,18 +24,19 @@ typedef struct s_philo
 {
 	pthread_t	th_ID;
 	int	p_num;
+	int	eat_count;
+	long	time_since_eat;
 	int	fork_status;
+	pthread_mutex_t	fork_l;
+	pthread_mutex_t	*fork_r;
 	int	eat_status;
 	int	sleep_status;
 	int	think_status;
 	int	is_dead;
+	long	rip_timer;
+	struct s_data	*info;
 } t_philo;
 
-typedef struct s_fork
-{
-	pthread_mutex_t f_ID;
-	int	f_num;
-} t_fork;
 typedef struct s_data
 {
 	long	start_time;
@@ -44,12 +45,14 @@ typedef struct s_data
 	int	time_to_eat;
 	int	time_to_sleep;
 	int	win_con;
-	int	i;
+	pthread_mutex_t	print;
 	t_philo	*phil;
-	t_fork	*fork;
 } t_data;
 
 int	ft_atoi(const char *str);
-void	status_message(t_data *data, int i);
+void	status_message(t_philo *philo, char *str);
+void	rip_timer(t_philo *philo);
+long	get_time();
+void	ft_exit(t_data *data);
 
 #endif

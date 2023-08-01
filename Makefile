@@ -4,6 +4,7 @@ INCLIB=$(INC)/../lib
 NAME = philo
 SRC = main.c \
 	ft_atoi.c \
+	status.c
 
 OBJ = $(SRC:.c=.o)
 CC = gcc

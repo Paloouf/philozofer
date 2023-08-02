@@ -6,7 +6,7 @@
 /*   By: ltressen <ltressen@student.42perpignan.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 08:57:52 by ltressen          #+#    #+#             */
-/*   Updated: 2023/08/01 15:56:30 by ltressen         ###   ########.fr       */
+/*   Updated: 2023/08/02 17:39:03 by ltressen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ typedef struct s_data
 
 int	ft_atoi(const char *str);
 void	status_message(t_philo *philo, char *str);
-void	rip_timer(t_philo *philo);
+int	rip_timer(t_philo *philo);
 long	get_time();
 void	ft_exit(t_data *data);
 

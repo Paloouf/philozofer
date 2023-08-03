@@ -4,12 +4,14 @@ INCLIB=$(INC)/../lib
 NAME = philo
 SRC = main.c \
 	ft_atoi.c \
-	status.c
+	status.c \
+	init.c \
+	philo.c
 
 OBJ = $(SRC:.c=.o)
 CC = gcc
 
-LFLAGS = -pthread #-fsanitize=thread -g
+LFLAGS = -pthread -fsanitize=thread -g
 FLAGS = -Wall -Werror -Wextra
 
 # ------------------------------ Colors ------------------------------

@@ -6,7 +6,7 @@
 /*   By: ltressen <ltressen@student.42perpignan.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/03 14:58:08 by ltressen          #+#    #+#             */
-/*   Updated: 2023/08/03 15:03:32 by ltressen         ###   ########.fr       */
+/*   Updated: 2023/08/03 16:50:56 by ltressen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,6 +63,7 @@ void	init_philos(t_data *data)
 		data->phil[i].think_status = 0;
 		data->phil[i].is_dead = 0;
 		pthread_mutex_init(&data->phil[i].fork_l, NULL);
+		pthread_mutex_init(&data->phil[i].meat_count, NULL);
 		i++;
 	}
 	philo_suite(data);

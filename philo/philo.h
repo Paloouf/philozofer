@@ -6,7 +6,7 @@
 /*   By: ltressen <ltressen@student.42perpignan.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 08:57:52 by ltressen          #+#    #+#             */
-/*   Updated: 2023/08/03 14:59:22 by ltressen         ###   ########.fr       */
+/*   Updated: 2023/08/03 16:50:35 by ltressen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ typedef struct s_philo
 	pthread_t		th_id;
 	int				p_num;
 	int				eat_count;
+	pthread_mutex_t				meat_count;
 	long			time_since_eat;
 	int				fork_status;
 	pthread_mutex_t	fork_l;

@@ -6,7 +6,7 @@
 /*   By: ltressen <ltressen@student.42perpignan.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 08:57:52 by ltressen          #+#    #+#             */
-/*   Updated: 2023/08/03 14:59:22 by ltressen         ###   ########.fr       */
+/*   Updated: 2023/08/03 15:44:26 by ltressen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,9 @@
 # include <unistd.h>
 # include <sys/time.h>
 # include <pthread.h>
+# include <semaphore.h>
+# include <fcntl.h>
+# include <sys/stat.h>
 
 typedef struct s_philo
 {

@@ -6,7 +6,7 @@
 /*   By: ltressen <ltressen@student.42perpignan.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/03 14:59:50 by ltressen          #+#    #+#             */
-/*   Updated: 2023/08/03 15:09:43 by ltressen         ###   ########.fr       */
+/*   Updated: 2023/08/03 16:51:24 by ltressen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,9 @@ void	mangiare(t_philo *philo)
 	take_forquetta(philo);
 	status_message(philo, " has taken a fork 🍴");
 	status_message(philo, " is manging 🍝");
+	pthread_mutex_lock(&philo->meat_count);
 	philo->eat_count++;
+	pthread_mutex_unlock(&philo->meat_count);
 	ft_usleep(philo->info->time_to_eat);
 	philo->time_since_eat = get_time();
 	status_message(philo, " is dodoing 💤");

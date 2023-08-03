@@ -6,7 +6,7 @@
 /*   By: ltressen <ltressen@student.42perpignan.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 10:35:57 by ltressen          #+#    #+#             */
-/*   Updated: 2023/08/03 15:02:11 by ltressen         ###   ########.fr       */
+/*   Updated: 2023/08/03 16:52:08 by ltressen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,8 +49,10 @@ int	is_win(t_data *data)
 	result = 0;
 	while (i < data->num_of_phil)
 	{
+		pthread_mutex_lock(&data->phil[i].meat_count);
 		if (data->phil[i].eat_count >= data->win_con && data->win_con != 0)
 			result++;
+		pthread_mutex_unlock(&data->phil[i].meat_count);
 		i++;
 	}
 	if (result == data->num_of_phil && data->win_con != 0)
@@ -73,12 +75,14 @@ void	ft_exit(t_data *data)
 	int	i;
 
 	i = 0;
+	//pthread_mutex_lock(&data->print);
 	while (i < data->num_of_phil)
 	{
-		pthread_join(data->phil[i].th_id, NULL);
+		//pthread_join(data->phil[i].th_id, NULL);
+		//pthread_detach(data->phil[i].th_id);
 		i++;
 	}
-	free(data->phil);
+	//free(data->phil);
 	return ;
 }
 

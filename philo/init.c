@@ -6,7 +6,7 @@
 /*   By: ltressen <ltressen@student.42perpignan.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/03 14:58:08 by ltressen          #+#    #+#             */
-/*   Updated: 2023/08/03 16:50:56 by ltressen         ###   ########.fr       */
+/*   Updated: 2023/08/09 17:17:59 by ltressen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,9 @@ void	init_params(t_data *data, int argc, char **argv)
 {
 	check_arg(argv);
 	pthread_mutex_init(&data->print, NULL);
+	pthread_mutex_init(&data->death, NULL);
+	pthread_mutex_init(&data->mooteks, NULL);
+	data->d_statu = 0;
 	data->start_time = get_time();
 	data->num_of_phil = ft_atoi(argv[1]);
 	data->time_to_die = ft_atoi(argv[2]);
@@ -61,7 +64,7 @@ void	init_philos(t_data *data)
 		data->phil[i].fork_status = 0;
 		data->phil[i].sleep_status = 0;
 		data->phil[i].think_status = 0;
-		data->phil[i].is_dead = 0;
+		data->phil[i].is_dead = &data->d_statu;
 		pthread_mutex_init(&data->phil[i].fork_l, NULL);
 		pthread_mutex_init(&data->phil[i].meat_count, NULL);
 		i++;

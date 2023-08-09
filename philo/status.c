@@ -6,7 +6,7 @@
 /*   By: ltressen <ltressen@student.42perpignan.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/31 11:32:50 by ltressen          #+#    #+#             */
-/*   Updated: 2023/08/03 16:53:30 by ltressen         ###   ########.fr       */
+/*   Updated: 2023/08/09 17:19:08 by ltressen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,13 +16,15 @@ void	status_message(t_philo *philo, char *str)
 {
 	long	result;
 
-	if (!philo->is_dead)
+	pthread_mutex_lock(&philo->info->print);
+	pthread_mutex_lock(&philo->info->death);
+	if (!*philo->is_dead)
 	{
-		pthread_mutex_lock(&philo->info->print);
 		result = get_time() - philo->info->start_time;
 		printf("%ld ms %d %s\n", result, philo->p_num + 1, str);
-		pthread_mutex_unlock(&philo->info->print);
 	}
+	pthread_mutex_unlock(&philo->info->death);
+	pthread_mutex_unlock(&philo->info->print);
 }
 
 long	get_time(void)
@@ -42,15 +44,24 @@ void	ft_usleep(int ms)
 		usleep(ms / 10);
 }
 
-int	rip_timer(t_philo *philo)
+int	rip_timer(t_data *data)
 {
-	philo->rip_timer = philo->info->time_to_die
-		- (get_time() - philo->info->start_time);
-	if (get_time() - philo->time_since_eat > philo->info->time_to_die)
+	int	i;
+
+	i = 0;
+	while (i < data->num_of_phil)
 	{
-		philo->info->phil[philo->p_num].is_dead = 1;
-		status_message(philo, "is kill 💀");
-		return (0);
+		data->phil[i].rip_timer = data->time_to_die
+			- (get_time() - data->start_time);
+		pthread_mutex_lock(&data->mooteks);
+		if (get_time() - data->phil[i].time_since_eat > data->time_to_die)
+		{
+			data->d_statu = 1;
+			pthread_mutex_unlock(&data->mooteks);
+			return (0);
+		}
+		pthread_mutex_unlock(&data->mooteks);
+		i++;
 	}
 	return (1);
 }

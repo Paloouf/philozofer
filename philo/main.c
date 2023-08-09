@@ -6,7 +6,7 @@
 /*   By: ltressen <ltressen@student.42perpignan.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 10:35:57 by ltressen          #+#    #+#             */
-/*   Updated: 2023/08/03 16:52:08 by ltressen         ###   ########.fr       */
+/*   Updated: 2023/08/09 17:17:59 by ltressen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,18 +20,14 @@ int	is_dead(t_data *data)
 	i = 0;
 	while (i < data->num_of_phil)
 	{
-		rip_timer(&data->phil[i]);
-		if (data->phil[i].is_dead)
+		rip_timer(data);
+		if (data->d_statu)
 		{
+			pthread_mutex_lock(&data->print);
 			result = get_time() - data->start_time;
 			printf("%ld ms %d %s", result,
 				data->phil[i].p_num + 1, " is kill 💀\n");
-			i = 0;
-			while (i < data->num_of_phil)
-			{
-				data->phil[i].is_dead = 1;
-				i++;
-			}
+			pthread_mutex_unlock(&data->print);
 			ft_exit(data);
 			return (0);
 		}
@@ -57,12 +53,7 @@ int	is_win(t_data *data)
 	}
 	if (result == data->num_of_phil && data->win_con != 0)
 	{
-		i = 0;
-		while (i < data->num_of_phil)
-		{
-			data->phil[i].is_dead = 1;
-			i++;
-		}
+		data->d_statu = 1;
 		printf("🤮🤮🤮 Too much spaghetti 🤮🤮🤮\n");
 		ft_exit(data);
 		return (0);
@@ -75,14 +66,12 @@ void	ft_exit(t_data *data)
 	int	i;
 
 	i = 0;
-	//pthread_mutex_lock(&data->print);
 	while (i < data->num_of_phil)
 	{
-		//pthread_join(data->phil[i].th_id, NULL);
-		//pthread_detach(data->phil[i].th_id);
+		pthread_join(data->phil[i].th_id, NULL);
 		i++;
 	}
-	//free(data->phil);
+	free(data->phil);
 	return ;
 }
 

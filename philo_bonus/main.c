@@ -6,18 +6,19 @@
 /*   By: ltressen <ltressen@student.42perpignan.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 10:35:57 by ltressen          #+#    #+#             */
-/*   Updated: 2023/08/10 14:08:35 by ltressen         ###   ########.fr       */
+/*   Updated: 2023/08/10 16:31:50 by ltressen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-void	is_dead(t_data *data)
-{
-	sem_wait(data->dead);
-	data->all_deads = 1;
-	sem_post(data->ok);
-}
+// void	is_dead(t_data *data)
+// {
+// 	// sem_wait(data->all_dead);
+// 	// data->all_deads = 1;
+// 	// sem_post(data->all_dead);
+// 	sem_post(data->ok);
+// }
 
 void	is_win(t_data *data)
 {
@@ -32,6 +33,7 @@ void	is_win(t_data *data)
 			i++;
 		}
 		data->win = 1;
+		data->all_deads = 1;
 	}
 }
 
@@ -60,7 +62,7 @@ int	main(int argc, char **argv)
 		return (0);
 	}
 	init_philos(&data);
-	pthread_create(&data.dead_id, NULL, (void *)is_dead, &data);
+	//pthread_create(&data.dead_id, NULL, (void *)is_dead, &data);
 	pthread_create(&data.win_id, NULL, (void *)is_win, &data);
 	while (1)
 	{
@@ -71,12 +73,13 @@ int	main(int argc, char **argv)
 			ft_exit(&data);
 			break ;
 		}
-		if (data.all_deads)
+		if (data.phil[0].info->all_deads)
 		{
+			printf("ici\n");
 			ft_exit(&data);
 			break ;
 		}
-
+		//printf("%d\n", data.phil[0].info->all_deads);
 	}
 	free(data.phil);
 	return (0);

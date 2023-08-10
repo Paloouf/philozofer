@@ -6,7 +6,7 @@
 /*   By: ltressen <ltressen@student.42perpignan.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/31 11:32:50 by ltressen          #+#    #+#             */
-/*   Updated: 2023/08/10 16:36:44 by ltressen         ###   ########.fr       */
+/*   Updated: 2023/08/10 16:58:45 by ltressen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,29 +19,30 @@ void	status_message(t_philo *philo, char *str, int flag)
 
 	i = 0;
 	sem_wait(philo->info->print);
-	sem_wait(philo->info->all_dead);
+	sem_wait(philo->info->is_deady);
 	if (!philo->is_dead)
 	{
-		
+		sem_post(philo->info->is_deady);
 		result = get_time() - philo->info->start_time;
 		printf("%ld ms %d %s\n", result, philo->p_num + 1, str);
 		if (flag == 1)
 		{
-			// while (i <= philo->info->num_of_phil)
-			// {
-			// 	sem_post(philo->info->dead);
-			// 	i++;
-			// }
+			while (i <= philo->info->num_of_phil)
+			{
+				sem_post(philo->info->dead);
+				i++;
+			}
 			i = 0;
 			while (i <= philo->info->num_of_phil)
 			{
 				sem_wait(philo->info->ok);
 				i++;
 			}
+			
 		}
-		
 	}
-	sem_post(philo->info->all_dead);
+	else
+		sem_post(philo->info->is_deady);
 	sem_post(philo->info->print);
 }
 

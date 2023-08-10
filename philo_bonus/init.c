@@ -6,7 +6,7 @@
 /*   By: ltressen <ltressen@student.42perpignan.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/03 14:58:08 by ltressen          #+#    #+#             */
-/*   Updated: 2023/08/10 16:23:39 by ltressen         ###   ########.fr       */
+/*   Updated: 2023/08/10 16:41:05 by ltressen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,20 +27,19 @@ void	init_params(t_data *data, int argc, char **argv)
 	data->phil = malloc(sizeof(t_philo) * data->num_of_phil);
 	data->dead = 0;
 	data->all_deads = 0;
-	//printf("%p\n", &data->all_deads);
 	data->win = 0;
 	sem_unlink("/forks");
 	sem_unlink("/print");
 	sem_unlink("/dead");
 	sem_unlink("/cwin");
-	sem_unlink("/all_dead");
 	sem_unlink("/ok");
+	sem_unlink("/is_deady");
 	data->forks = sem_open("/forks", O_CREAT, 0644, (int)data->num_of_phil);
 	data->print = sem_open("/print", O_CREAT, 0644, 1);
-	data->dead = sem_open("/dead", O_CREAT, 0644, 1);
+	data->dead = sem_open("/dead", O_CREAT, 0644, 0);
 	data->cwin = sem_open("/cwin", O_CREAT, 0644, 0);
 	data->ok = sem_open("/ok", O_CREAT, 0644, 0);
-	data->all_dead = sem_open("/all_dead", O_CREAT, 0644, 1);
+	data->is_deady = sem_open("/is_deady", O_CREAT, 0644, 1);
 }
 
 void	philo_suite(t_data *data)
@@ -50,6 +49,7 @@ void	philo_suite(t_data *data)
 	i = 0;
 	while (i < data->num_of_phil)
 	{
+		//printf("heretoo");
 		data->phil[i].pid = fork ();
 		if (data->phil[i].pid == 0)
 			loop(data, i);

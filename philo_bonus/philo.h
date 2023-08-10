@@ -6,7 +6,7 @@
 /*   By: ltressen <ltressen@student.42perpignan.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 08:57:52 by ltressen          #+#    #+#             */
-/*   Updated: 2023/08/10 14:11:55 by ltressen         ###   ########.fr       */
+/*   Updated: 2023/08/10 16:40:28 by ltressen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,9 +57,9 @@ typedef struct s_data
 	sem_t	*forks;
 	sem_t	*print;
 	sem_t	*dead;
-	sem_t	*all_dead;
 	sem_t	*cwin;
 	sem_t	*ok;
+	sem_t	*is_deady;
 	t_philo			*phil;
 }	t_data;
 

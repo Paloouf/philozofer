@@ -6,7 +6,7 @@
 /*   By: ltressen <ltressen@student.42perpignan.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/03 14:59:50 by ltressen          #+#    #+#             */
-/*   Updated: 2023/08/10 16:35:44 by ltressen         ###   ########.fr       */
+/*   Updated: 2023/08/10 16:58:48 by ltressen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,29 +16,25 @@ void	rip_timer(t_philo *philo)
 {
 	while (1)
 	{	
-		sem_wait(philo->info->dead);
 		if (philo->is_dead)
 			break;
 		if (get_time() - philo->time_since_eat > philo->info->time_to_die)
-		{	
-			
-			philo->info->all_deads = 1;
-			//printf("%p\n", &philo->info->all_deads);
+		{
 			status_message(philo, "is kill 💀", 1);
-			sem_post(philo->info->dead);
 			break;
 		}
-		sem_post(philo->info->dead);
+		
 	}
 }
 
-// void	check_rip(t_philo *philo)
-// {
-// 	sem_wait(philo->info->dead);
-// 	philo->is_dead = 1;
-// 	sem_post(philo->info->dead);
-// 	sem_post(philo->info->ok);
-// }
+void	check_rip(t_philo *philo)
+{
+	sem_wait(philo->info->dead);
+	sem_wait(philo->info->is_deady);
+	philo->is_dead = 1;
+	sem_post(philo->info->is_deady);
+	sem_post(philo->info->ok);
+}
 
 void	mangiare(t_philo *philo)
 {
@@ -66,13 +62,18 @@ void	*loop(t_data *data, int i)
 	if (i % 2 == 0)
 		ft_usleep(data->time_to_eat / 10);
 	pthread_create(&data->phil[i].rip, NULL, (void *)rip_timer, &data->phil[i]);
-	//pthread_create(&data->phil[i].rips, NULL, (void *)check_rip, &data->phil[i]);
+	pthread_create(&data->phil[i].rips, NULL, (void *)check_rip, &data->phil[i]);
 	while (1)
 	{
-		if (!data->all_deads)
+		sem_wait(data->is_deady);
+		if (!data->phil[i].is_dead)
+		{
+			sem_post(data->is_deady);
 			mangiare(&data->phil[i]);
+		}
 		else
 		{
+			sem_post(data->is_deady);
 			break ;
 		}
 	}
@@ -83,6 +84,7 @@ void	*loop(t_data *data, int i)
 	sem_close(data->dead);
 	sem_close(data->cwin);
 	sem_close(data->ok);
+	sem_close(data->is_deady);
 	free(data->phil);
 	exit(0);
 }

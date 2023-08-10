@@ -11,7 +11,7 @@ SRC = main.c \
 OBJ = $(SRC:.c=.o)
 CC = gcc
 
-LFLAGS = -pthread -lpthread -lrt #-fsanitize=thread -g
+LFLAGS = -pthread #-fsanitize=thread -g
 FLAGS = -Wall -Werror -Wextra
 
 # ------------------------------ Colors ------------------------------

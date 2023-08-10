@@ -6,21 +6,39 @@
 /*   By: ltressen <ltressen@student.42perpignan.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/31 11:32:50 by ltressen          #+#    #+#             */
-/*   Updated: 2023/08/03 15:47:39 by ltressen         ###   ########.fr       */
+/*   Updated: 2023/08/10 14:01:03 by ltressen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-void	status_message(t_philo *philo, char *str)
+void	status_message(t_philo *philo, char *str, int flag)
 {
 	long	result;
+	int	i;
 
+	i = 0;
+	sem_wait(philo->info->print);
 	if (!philo->is_dead)
 	{
 		result = get_time() - philo->info->start_time;
 		printf("%ld ms %d %s\n", result, philo->p_num + 1, str);
+		if (flag == 1)
+		{
+			while (i <= philo->info->num_of_phil)
+			{
+				sem_post(philo->info->dead);
+				i++;
+			}
+			i = 0;
+			while (i <= philo->info->num_of_phil)
+			{
+				sem_wait(philo->info->ok);
+				i++;
+			}
+		}
 	}
+	sem_post(philo->info->print);
 }
 
 long	get_time(void)
@@ -38,19 +56,6 @@ void	ft_usleep(int ms)
 	time = get_time();
 	while (get_time() - time < ms)
 		usleep(ms / 10);
-}
-
-int	rip_timer(t_philo *philo)
-{
-	philo->rip_timer = philo->info->time_to_die
-		- (get_time() - philo->info->start_time);
-	if (get_time() - philo->time_since_eat > philo->info->time_to_die)
-	{
-		philo->info->phil[philo->p_num].is_dead = 1;
-		status_message(philo, "is kill 💀");
-		return (0);
-	}
-	return (1);
 }
 
 void	check_arg(char **argv)

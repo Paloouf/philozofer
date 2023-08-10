@@ -6,81 +6,75 @@
 /*   By: ltressen <ltressen@student.42perpignan.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/03 14:59:50 by ltressen          #+#    #+#             */
-/*   Updated: 2023/08/03 15:48:16 by ltressen         ###   ########.fr       */
+/*   Updated: 2023/08/10 14:08:35 by ltressen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-void	take_forquetta(t_philo *philo)
+void	rip_timer(t_philo *philo)
 {
-	if (philo->p_num % 2 == 0 && !philo->is_dead)
-	{
-		philo->fork_status = 1;
-		//pthread_mutex_lock(&philo->fork_l);
-		status_message(philo, " has taken a fork 🍴");
-		if (!philo->is_dead)
+	while (1)
+	{	
+		if (philo->is_dead)
+			break;
+		if (get_time() - philo->time_since_eat > philo->info->time_to_die)
 		{
-			philo->fork_status = 2;
-			//pthread_mutex_lock(philo->fork_r);
+			status_message(philo, "is kill 💀", 1);
+			break;
 		}
+		
 	}
-	if (philo->p_num % 2 == 1 && !philo->is_dead)
-	{
-		philo->fork_status = 1;
-		//pthread_mutex_lock(philo->fork_r);
-		status_message(philo, " has taken a fork 🍴");
-		if (!philo->is_dead)
-		{
-			philo->fork_status = 2;
-			//pthread_mutex_lock(&philo->fork_l);
-		}
-	}
+}
+
+void	check_rip(t_philo *philo)
+{
+	sem_wait(philo->info->dead);
+	philo->is_dead = 1;
+	sem_post(philo->info->ok);
 }
 
 void	mangiare(t_philo *philo)
 {
-	philo->eat_status = 1;
-	take_forquetta(philo);
-	status_message(philo, " has taken a fork 🍴");
-	status_message(philo, " is manging 🍝");
+	philo->check = 0;
+	sem_wait(philo->info->forks);
+	status_message(philo, " has taken a forquetta 🍴", 0);
+	sem_wait(philo->info->forks);
+	status_message(philo, " has taken a forquetta 🍴", 0);
+	status_message(philo, " is mangiaring 🍝", 0);
 	philo->eat_count++;
-	ft_usleep(philo->info->time_to_eat);
 	philo->time_since_eat = get_time();
-	status_message(philo, " is dodoing 💤");
-	if (philo->p_num % 2 == 0)
-	{
-		// if (philo->fork_status > 1)
-		// 	//pthread_mutex_unlock(philo->fork_r);
-		// if (philo->fork_status > 0)
-			//pthread_mutex_unlock(&philo->fork_l);
-	}
-	else
-	{
-		// if (philo->fork_status > 1)
-		// 	//pthread_mutex_unlock(&philo->fork_l);
-		// if (philo->fork_status > 0)
-		// 	//pthread_mutex_unlock(philo->fork_r);
-	}
+	if (philo->eat_count == philo->info->win_con)
+		sem_post(philo->info->cwin);
+	ft_usleep(philo->info->time_to_eat);
+	status_message(philo, " is dodoing 💤", 0);
+	sem_post(philo->info->forks);
+	sem_post(philo->info->forks);
 	ft_usleep(philo->info->time_to_sleep);
-	philo->fork_status = 0;
-	status_message(philo, " is pensing 🤔");
+	status_message(philo, " is pensing 🤔", 0);
+	philo->check = 1;
 }
 
-void	*loop(t_philo *phil)
+void	*loop(t_data *data, int i)
 {
-	t_philo	*philo;
-
-	philo = (t_philo *)phil;
-	if (philo->p_num % 2 == 0)
-		ft_usleep(philo->info->time_to_eat / 10);
+	if (i % 2 == 0)
+		ft_usleep(data->time_to_eat / 10);
+	pthread_create(&data->phil[i].rip, NULL, (void *)rip_timer, &data->phil[i]);
+	pthread_create(&data->phil[i].rips, NULL, (void *)check_rip, &data->phil[i]);
 	while (1)
 	{
-		if (!philo->is_dead)
-			mangiare(philo);
+		if (!data->phil[i].is_dead)
+			mangiare(&data->phil[i]);
 		else
 			break ;
 	}
-	philo->is_dead = 1;
-	return (NULL);
+	pthread_join(data->phil[i].rip, NULL);
+	pthread_join(data->phil[i].rips, NULL);
+	sem_close(data->forks);
+	sem_close(data->print);
+	sem_close(data->dead);
+	sem_close(data->cwin);
+	sem_close(data->ok);
+	free(data->phil);
+	exit(0);
 }

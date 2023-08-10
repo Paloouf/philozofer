@@ -6,79 +6,44 @@
 /*   By: ltressen <ltressen@student.42perpignan.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 10:35:57 by ltressen          #+#    #+#             */
-/*   Updated: 2023/08/03 15:02:11 by ltressen         ###   ########.fr       */
+/*   Updated: 2023/08/10 14:08:35 by ltressen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-int	is_dead(t_data *data)
+void	is_dead(t_data *data)
 {
-	int		i;
-	long	result;
-
-	i = 0;
-	while (i < data->num_of_phil)
-	{
-		rip_timer(&data->phil[i]);
-		if (data->phil[i].is_dead)
-		{
-			result = get_time() - data->start_time;
-			printf("%ld ms %d %s", result,
-				data->phil[i].p_num + 1, " is kill 💀\n");
-			i = 0;
-			while (i < data->num_of_phil)
-			{
-				data->phil[i].is_dead = 1;
-				i++;
-			}
-			ft_exit(data);
-			return (0);
-		}
-		i++;
-	}
-	return (1);
+	sem_wait(data->dead);
+	data->all_deads = 1;
+	sem_post(data->ok);
 }
 
-int	is_win(t_data *data)
-{
-	int		i;
-	long	result;
-
-	i = 0;
-	result = 0;
-	while (i < data->num_of_phil)
-	{
-		if (data->phil[i].eat_count >= data->win_con && data->win_con != 0)
-			result++;
-		i++;
-	}
-	if (result == data->num_of_phil && data->win_con != 0)
-	{
-		i = 0;
-		while (i < data->num_of_phil)
-		{
-			data->phil[i].is_dead = 1;
-			i++;
-		}
-		printf("🤮🤮🤮 Too much spaghetti 🤮🤮🤮\n");
-		ft_exit(data);
-		return (0);
-	}
-	return (1);
-}
-
-void	ft_exit(t_data *data)
+void	is_win(t_data *data)
 {
 	int	i;
 
 	i = 0;
-	while (i < data->num_of_phil)
+	if (data->win_con != 0)
 	{
-		pthread_join(data->phil[i].th_id, NULL);
-		i++;
+		while (i < data->num_of_phil)
+		{
+			sem_wait(data->cwin);
+			i++;
+		}
+		data->win = 1;
 	}
-	free(data->phil);
+}
+
+void	ft_exit(t_data *data)
+{
+	pthread_join(data->dead_id, NULL);
+	pthread_join(data->win_id, NULL);
+	sem_close(data->forks);
+	sem_close(data->print);
+	sem_close(data->dead);
+	sem_close(data->cwin);
+	sem_close(data->ok);
 	return ;
 }
 
@@ -95,12 +60,24 @@ int	main(int argc, char **argv)
 		return (0);
 	}
 	init_philos(&data);
-	while (1 > 0)
+	pthread_create(&data.dead_id, NULL, (void *)is_dead, &data);
+	pthread_create(&data.win_id, NULL, (void *)is_win, &data);
+	while (1)
 	{
-		if (!is_dead(&data))
+		if (data.win)
+		{
+			status_message(&data.phil[0], " winned", 1);
+			//printf("🤮🤮🤮 Too much mozzarella 🤮🤮🤮\n");
+			ft_exit(&data);
 			break ;
-		if (!is_win(&data))
+		}
+		if (data.all_deads)
+		{
+			ft_exit(&data);
 			break ;
+		}
+
 	}
+	free(data.phil);
 	return (0);
 }

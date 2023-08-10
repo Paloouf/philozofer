@@ -6,7 +6,7 @@
 /*   By: ltressen <ltressen@student.42perpignan.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/03 14:58:08 by ltressen          #+#    #+#             */
-/*   Updated: 2023/08/03 15:47:43 by ltressen         ###   ########.fr       */
+/*   Updated: 2023/08/10 14:00:26 by ltressen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 void	init_params(t_data *data, int argc, char **argv)
 {
 	check_arg(argv);
-	//pthread_mutex_init(&data->print, NULL);
 	data->start_time = get_time();
 	data->num_of_phil = ft_atoi(argv[1]);
 	data->time_to_die = ft_atoi(argv[2]);
@@ -26,8 +25,19 @@ void	init_params(t_data *data, int argc, char **argv)
 	else
 		data->win_con = 0;
 	data->phil = malloc(sizeof(t_philo) * data->num_of_phil);
+	data->dead = 0;
+	data->all_deads = 0;
+	data->win = 0;
 	sem_unlink("/forks");
-	sem_open("/forks", O_CREAT, 0644, (int)data->num_of_phil);
+	sem_unlink("/print");
+	sem_unlink("/dead");
+	sem_unlink("/cwin");
+	sem_unlink("/ok");
+	data->forks = sem_open("/forks", O_CREAT, 0644, (int)data->num_of_phil);
+	data->print = sem_open("/print", O_CREAT, 0644, 1);
+	data->dead = sem_open("/dead", O_CREAT, 0644, 0);
+	data->cwin = sem_open("/cwin", O_CREAT, 0644, 0);
+	data->ok = sem_open("/ok", O_CREAT, 0644, 0);
 }
 
 void	philo_suite(t_data *data)
@@ -37,12 +47,10 @@ void	philo_suite(t_data *data)
 	i = 0;
 	while (i < data->num_of_phil)
 	{
-		if (i == data->num_of_phil - 1)
-			data->phil[i].fork_r = &data->phil[0].fork_l;
-		else
-			data->phil[i].fork_r = &data->phil[i + 1].fork_l;
-		pthread_create(&data->phil[i].th_id,
-			NULL, (void *)loop, &data->phil[i]);
+		//printf("heretoo");
+		data->phil[i].pid = fork ();
+		if (data->phil[i].pid == 0)
+			loop(data, i);
 		i++;
 	}
 }
@@ -53,10 +61,10 @@ void	init_philos(t_data *data)
 
 	i = 0;
 	while (i < data->num_of_phil)
-	{
+	{	
+		data->phil[i].check = 0;
 		data->phil[i].p_num = i;
 		data->phil[i].eat_status = 0;
-		data->phil[i].fork_r = NULL;
 		data->phil[i].info = data;
 		data->phil[i].eat_count = 0;
 		data->phil[i].time_since_eat = get_time();
@@ -64,7 +72,6 @@ void	init_philos(t_data *data)
 		data->phil[i].sleep_status = 0;
 		data->phil[i].think_status = 0;
 		data->phil[i].is_dead = 0;
-		//pthread_mutex_init(&data->phil[i].fork_l, NULL);
 		i++;
 	}
 	philo_suite(data);

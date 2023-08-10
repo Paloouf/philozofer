@@ -6,7 +6,7 @@
 /*   By: ltressen <ltressen@student.42perpignan.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/31 11:32:50 by ltressen          #+#    #+#             */
-/*   Updated: 2023/08/09 17:19:08 by ltressen         ###   ########.fr       */
+/*   Updated: 2023/08/10 11:03:09 by ltressen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,12 @@ void	check_arg(char **argv)
 {
 	int	i;
 
-	i = 1;
+	i = 2;
+	if (ft_atoi(argv[1]) < 1)
+	{
+		printf("Number of philos must be above 0\n");
+		exit(2);
+	}
 	while (argv[i])
 	{
 		if (ft_atoi(argv[i]) < 2)

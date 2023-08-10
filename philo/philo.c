@@ -6,7 +6,7 @@
 /*   By: ltressen <ltressen@student.42perpignan.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/03 14:59:50 by ltressen          #+#    #+#             */
-/*   Updated: 2023/08/09 17:21:20 by ltressen         ###   ########.fr       */
+/*   Updated: 2023/08/10 11:01:58 by ltressen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ void	take_forquetta(t_philo *philo)
 void	mangiaren(t_philo *philo)
 {
 	status_message(philo, " has taken a fork 🍴");
-	status_message(philo, " is manging 🍝");
+	status_message(philo, " is eating 🍝");
 	pthread_mutex_lock(&philo->meat_count);
 	philo->eat_count++;
 	pthread_mutex_unlock(&philo->meat_count);
@@ -56,7 +56,7 @@ void	mangiare(t_philo *philo)
 	pthread_mutex_lock(&philo->info->mooteks);
 	philo->time_since_eat = get_time();
 	pthread_mutex_unlock(&philo->info->mooteks);
-	status_message(philo, " is dodoing 💤");
+	status_message(philo, " is sleeping 💤");
 	if (philo->p_num % 2 == 0)
 	{
 		if (philo->fork_status > 1)
@@ -73,7 +73,7 @@ void	mangiare(t_philo *philo)
 	}
 	ft_usleep(philo->info->time_to_sleep);
 	philo->fork_status = 0;
-	status_message(philo, " is pensing 🤔");
+	status_message(philo, " is thinking 🤔");
 }
 
 void	*loop(t_philo *philo)

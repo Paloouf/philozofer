@@ -6,7 +6,7 @@
 /*   By: ltressen <ltressen@student.42perpignan.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 10:35:57 by ltressen          #+#    #+#             */
-/*   Updated: 2023/08/09 17:17:59 by ltressen         ###   ########.fr       */
+/*   Updated: 2023/08/10 11:02:12 by ltressen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ int	is_dead(t_data *data)
 			pthread_mutex_lock(&data->print);
 			result = get_time() - data->start_time;
 			printf("%ld ms %d %s", result,
-				data->phil[i].p_num + 1, " is kill 💀\n");
+				data->phil[i].p_num + 1, " died 💀\n");
 			pthread_mutex_unlock(&data->print);
 			ft_exit(data);
 			return (0);

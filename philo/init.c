@@ -6,7 +6,7 @@
 /*   By: ltressen <ltressen@student.42perpignan.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/03 14:58:08 by ltressen          #+#    #+#             */
-/*   Updated: 2023/08/09 17:17:59 by ltressen         ###   ########.fr       */
+/*   Updated: 2023/08/10 11:00:50 by ltressen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,11 +31,24 @@ void	init_params(t_data *data, int argc, char **argv)
 	data->phil = malloc(sizeof(t_philo) * data->num_of_phil);
 }
 
+void	cas_particulier(t_data *data)
+{
+	long	result;
+
+	result = get_time() - data->start_time;
+	printf("%ld ms 1 has taken a fork 🍴\n", result);
+}
+
 void	philo_suite(t_data *data)
 {
 	int	i;
 
 	i = 0;
+	if (data->num_of_phil == 1)
+	{
+		cas_particulier(data);
+		return ;
+	}
 	while (i < data->num_of_phil)
 	{
 		if (i == data->num_of_phil - 1)

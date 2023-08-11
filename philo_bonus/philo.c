@@ -6,7 +6,7 @@
 /*   By: ltressen <ltressen@student.42perpignan.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/03 14:59:50 by ltressen          #+#    #+#             */
-/*   Updated: 2023/08/10 16:58:48 by ltressen         ###   ########.fr       */
+/*   Updated: 2023/08/11 13:45:53 by ltressen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,15 +15,22 @@
 void	rip_timer(t_philo *philo)
 {
 	while (1)
-	{	
+	{
+		sem_wait(philo->info->is_deady);
 		if (philo->is_dead)
-			break;
+		{
+			sem_post(philo->info->is_deady);
+			break ;
+		}
+		sem_post(philo->info->is_deady);
+		sem_wait(philo->info->timer);
 		if (get_time() - philo->time_since_eat > philo->info->time_to_die)
 		{
 			status_message(philo, "is kill 💀", 1);
-			break;
+			sem_post(philo->info->timer);
+			break ;
 		}
-		
+		sem_post(philo->info->timer);
 	}
 }
 
@@ -33,19 +40,19 @@ void	check_rip(t_philo *philo)
 	sem_wait(philo->info->is_deady);
 	philo->is_dead = 1;
 	sem_post(philo->info->is_deady);
-	sem_post(philo->info->ok);
 }
 
 void	mangiare(t_philo *philo)
 {
-	philo->check = 0;
 	sem_wait(philo->info->forks);
 	status_message(philo, " has taken a forquetta 🍴", 0);
 	sem_wait(philo->info->forks);
 	status_message(philo, " has taken a forquetta 🍴", 0);
 	status_message(philo, " is mangiaring 🍝", 0);
 	philo->eat_count++;
+	sem_wait(philo->info->timer);
 	philo->time_since_eat = get_time();
+	sem_post(philo->info->timer);
 	if (philo->eat_count == philo->info->win_con)
 		sem_post(philo->info->cwin);
 	ft_usleep(philo->info->time_to_eat);
@@ -54,7 +61,6 @@ void	mangiare(t_philo *philo)
 	sem_post(philo->info->forks);
 	ft_usleep(philo->info->time_to_sleep);
 	status_message(philo, " is pensing 🤔", 0);
-	philo->check = 1;
 }
 
 void	*loop(t_data *data, int i)
@@ -62,7 +68,10 @@ void	*loop(t_data *data, int i)
 	if (i % 2 == 0)
 		ft_usleep(data->time_to_eat / 10);
 	pthread_create(&data->phil[i].rip, NULL, (void *)rip_timer, &data->phil[i]);
-	pthread_create(&data->phil[i].rips, NULL, (void *)check_rip, &data->phil[i]);
+	pthread_create(&data->phil[i].rips, NULL,
+		(void *)check_rip, &data->phil[i]);
+	pthread_detach(data->phil[i].rip);
+	pthread_detach(data->phil[i].rips);
 	while (1)
 	{
 		sem_wait(data->is_deady);
@@ -77,14 +86,6 @@ void	*loop(t_data *data, int i)
 			break ;
 		}
 	}
-	pthread_join(data->phil[i].rip, NULL);
-	pthread_join(data->phil[i].rips, NULL);
-	sem_close(data->forks);
-	sem_close(data->print);
-	sem_close(data->dead);
-	sem_close(data->cwin);
-	sem_close(data->ok);
-	sem_close(data->is_deady);
 	free(data->phil);
 	exit(0);
 }

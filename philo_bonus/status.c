@@ -6,7 +6,7 @@
 /*   By: ltressen <ltressen@student.42perpignan.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/31 11:32:50 by ltressen          #+#    #+#             */
-/*   Updated: 2023/08/10 16:58:45 by ltressen         ###   ########.fr       */
+/*   Updated: 2023/08/11 13:40:43 by ltressen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 void	status_message(t_philo *philo, char *str, int flag)
 {
 	long	result;
-	int	i;
+	int		i;
 
 	i = 0;
 	sem_wait(philo->info->print);
@@ -32,13 +32,6 @@ void	status_message(t_philo *philo, char *str, int flag)
 				sem_post(philo->info->dead);
 				i++;
 			}
-			i = 0;
-			while (i <= philo->info->num_of_phil)
-			{
-				sem_wait(philo->info->ok);
-				i++;
-			}
-			
 		}
 	}
 	else
@@ -67,7 +60,12 @@ void	check_arg(char **argv)
 {
 	int	i;
 
-	i = 1;
+	i = 2;
+	if (ft_atoi(argv[1]) < 1)
+	{
+		printf("Number of philos must be above 0\n");
+		exit(2);
+	}
 	while (argv[i])
 	{
 		if (ft_atoi(argv[i]) < 2)

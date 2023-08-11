@@ -6,7 +6,7 @@
 /*   By: ltressen <ltressen@student.42perpignan.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 10:35:57 by ltressen          #+#    #+#             */
-/*   Updated: 2023/08/10 17:00:05 by ltressen         ###   ########.fr       */
+/*   Updated: 2023/08/11 13:54:00 by ltressen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,9 @@
 void	is_dead(t_data *data)
 {
 	sem_wait(data->dead);
+	sem_wait(data->all_deady);
 	data->all_deads = 1;
-	sem_post(data->ok);
+	sem_post(data->all_deady);
 }
 
 void	is_win(t_data *data)
@@ -31,7 +32,9 @@ void	is_win(t_data *data)
 			sem_wait(data->cwin);
 			i++;
 		}
+		sem_wait(data->cwinny);
 		data->win = 1;
+		sem_post(data->cwinny);
 	}
 }
 
@@ -45,15 +48,43 @@ void	ft_exit(t_data *data)
 		sem_post(data->cwin);
 		i++;
 	}
-	pthread_join(data->dead_id, NULL);
-	pthread_join(data->win_id, NULL);
+	i = 0;
+	while (i < data->num_of_phil)
+	{
+		kill(data->phil[i].pid, SIGKILL);
+		i++;
+	}
 	sem_close(data->forks);
+	sem_close(data->cwinny);
+	sem_close(data->all_deady);
 	sem_close(data->print);
+	sem_close(data->timer);
 	sem_close(data->dead);
 	sem_close(data->cwin);
-	sem_close(data->ok);
 	sem_close(data->is_deady);
 	return ;
+}
+
+void	loop_main(t_data *data)
+{
+	while (1)
+	{
+		sem_wait(data->cwinny);
+		if (data->win)
+		{
+			status_message(&data->phil[0], " winned", 1);
+			ft_exit(data);
+			break ;
+		}
+		sem_post(data->cwinny);
+		sem_wait(data->all_deady);
+		if (data->all_deads)
+		{
+			ft_exit(data);
+			break ;
+		}
+		sem_post(data->all_deady);
+	}
 }
 
 int	main(int argc, char **argv)
@@ -71,21 +102,9 @@ int	main(int argc, char **argv)
 	init_philos(&data);
 	pthread_create(&data.dead_id, NULL, (void *)is_dead, &data);
 	pthread_create(&data.win_id, NULL, (void *)is_win, &data);
-	while (1)
-	{
-		if (data.win)
-		{
-			status_message(&data.phil[0], " winned", 1);
-			ft_exit(&data);
-			break ;
-		}
-		if (data.all_deads)
-		{
-			ft_exit(&data);
-			break ;
-		}
-
-	}
+	pthread_detach(data.dead_id);
+	pthread_detach(data.win_id);
+	loop_main(&data);
 	free(data.phil);
 	return (0);
 }

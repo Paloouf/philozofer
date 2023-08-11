@@ -6,7 +6,7 @@
 /*   By: ltressen <ltressen@student.42perpignan.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/26 08:57:52 by ltressen          #+#    #+#             */
-/*   Updated: 2023/08/10 16:40:28 by ltressen         ###   ########.fr       */
+/*   Updated: 2023/08/11 13:45:19 by ltressen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@
 # include <semaphore.h>
 # include <fcntl.h>
 # include <sys/stat.h>
+# include <sys/wait.h>
 
 typedef struct s_philo
 {
@@ -52,20 +53,22 @@ typedef struct s_data
 	int				win_con;
 	int				all_deads;
 	int				win;
-	pthread_t			dead_id;
-	pthread_t			win_id;
-	sem_t	*forks;
-	sem_t	*print;
-	sem_t	*dead;
-	sem_t	*cwin;
-	sem_t	*ok;
-	sem_t	*is_deady;
+	pthread_t		dead_id;
+	pthread_t		win_id;
+	sem_t			*forks;
+	sem_t			*print;
+	sem_t			*dead;
+	sem_t			*cwin;
+	sem_t			*is_deady;
+	sem_t			*timer;
+	sem_t			*all_deady;
+	sem_t			*cwinny;
 	t_philo			*phil;
 }	t_data;
 
 int		ft_atoi(const char *str);
 void	status_message(t_philo *philo, char *str, int flag);
-void		rip_timer(t_philo *philo);
+void	rip_timer(t_philo *philo);
 long	get_time(void);
 void	ft_exit(t_data *data);
 void	ft_usleep(int ms);

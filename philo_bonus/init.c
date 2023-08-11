@@ -6,11 +6,33 @@
 /*   By: ltressen <ltressen@student.42perpignan.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/03 14:58:08 by ltressen          #+#    #+#             */
-/*   Updated: 2023/08/10 16:41:05 by ltressen         ###   ########.fr       */
+/*   Updated: 2023/08/11 13:47:04 by ltressen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
+
+void	init_sem(t_data *data)
+{
+	sem_unlink("/forks");
+	sem_unlink("/print");
+	sem_unlink("/dead");
+	sem_unlink("/cwin");
+	sem_unlink("/ok");
+	sem_unlink("/is_deady");
+	sem_unlink("/timer");
+	sem_unlink("/all_deady");
+	sem_unlink("/cwinny");
+	data->forks = sem_open("/forks", O_CREAT, 0777, (int)data->num_of_phil - 1);
+	sem_post(data->forks);
+	data->print = sem_open("/print", O_CREAT, 0644, 1);
+	data->all_deady = sem_open("/all_deady", O_CREAT, 0644, 1);
+	data->cwinny = sem_open("/cwinny", O_CREAT, 0644, 1);
+	data->dead = sem_open("/dead", O_CREAT, 0644, 0);
+	data->cwin = sem_open("/cwin", O_CREAT, 0644, 0);
+	data->is_deady = sem_open("/is_deady", O_CREAT, 0644, 1);
+	data->timer = sem_open("/timer", O_CREAT, 0644, 1);
+}
 
 void	init_params(t_data *data, int argc, char **argv)
 {
@@ -28,18 +50,7 @@ void	init_params(t_data *data, int argc, char **argv)
 	data->dead = 0;
 	data->all_deads = 0;
 	data->win = 0;
-	sem_unlink("/forks");
-	sem_unlink("/print");
-	sem_unlink("/dead");
-	sem_unlink("/cwin");
-	sem_unlink("/ok");
-	sem_unlink("/is_deady");
-	data->forks = sem_open("/forks", O_CREAT, 0644, (int)data->num_of_phil);
-	data->print = sem_open("/print", O_CREAT, 0644, 1);
-	data->dead = sem_open("/dead", O_CREAT, 0644, 0);
-	data->cwin = sem_open("/cwin", O_CREAT, 0644, 0);
-	data->ok = sem_open("/ok", O_CREAT, 0644, 0);
-	data->is_deady = sem_open("/is_deady", O_CREAT, 0644, 1);
+	init_sem(data);
 }
 
 void	philo_suite(t_data *data)
@@ -49,7 +60,6 @@ void	philo_suite(t_data *data)
 	i = 0;
 	while (i < data->num_of_phil)
 	{
-		//printf("heretoo");
 		data->phil[i].pid = fork ();
 		if (data->phil[i].pid == 0)
 			loop(data, i);
@@ -63,7 +73,7 @@ void	init_philos(t_data *data)
 
 	i = 0;
 	while (i < data->num_of_phil)
-	{	
+	{
 		data->phil[i].check = 0;
 		data->phil[i].p_num = i;
 		data->phil[i].eat_status = 0;

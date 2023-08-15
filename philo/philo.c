@@ -6,7 +6,7 @@
 /*   By: ltressen <ltressen@student.42perpignan.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/03 14:59:50 by ltressen          #+#    #+#             */
-/*   Updated: 2023/08/10 11:01:58 by ltressen         ###   ########.fr       */
+/*   Updated: 2023/08/15 16:39:06 by ltressen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,27 +14,21 @@
 
 void	take_forquetta(t_philo *philo)
 {
-	if (philo->p_num % 2 == 0 && !*philo->is_dead)
+	if (philo->p_num % 2 == 0)
 	{
 		philo->fork_status = 1;
 		pthread_mutex_lock(&philo->fork_l);
 		status_message(philo, " has taken a fork 🍴");
-		if (!philo->is_dead)
-		{
-			philo->fork_status = 2;
-			pthread_mutex_lock(philo->fork_r);
-		}
+		philo->fork_status = 2;
+		pthread_mutex_lock(philo->fork_r);
 	}
-	if (philo->p_num % 2 == 1 && !*philo->is_dead)
+	if (philo->p_num % 2 == 1)
 	{
 		philo->fork_status = 1;
 		pthread_mutex_lock(philo->fork_r);
 		status_message(philo, " has taken a fork 🍴");
-		if (!philo->is_dead)
-		{
-			philo->fork_status = 2;
-			pthread_mutex_lock(&philo->fork_l);
-		}
+		philo->fork_status = 2;
+		pthread_mutex_lock(&philo->fork_l);
 	}
 }
 
@@ -82,12 +76,15 @@ void	*loop(t_philo *philo)
 		ft_usleep(philo->info->time_to_eat / 10);
 	while (1)
 	{
+		pthread_mutex_lock(&philo->info->death);
 		if (!*philo->is_dead)
 		{
+			pthread_mutex_unlock(&philo->info->death);
 			mangiare(philo);
 		}
 		else
 		{
+			pthread_mutex_unlock(&philo->info->death);
 			break ;
 		}
 	}

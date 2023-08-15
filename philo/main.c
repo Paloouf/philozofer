@@ -6,7 +6,7 @@
 /*   By: ltressen <ltressen@student.42perpignan.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 10:35:57 by ltressen          #+#    #+#             */
-/*   Updated: 2023/08/15 11:45:30 by ltressen         ###   ########.fr       */
+/*   Updated: 2023/08/15 16:39:23 by ltressen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,10 @@ int	is_dead(t_data *data)
 	while (i < data->num_of_phil)
 	{
 		rip_timer(data);
+		pthread_mutex_lock(&data->death);
 		if (data->d_statu)
 		{
+			pthread_mutex_unlock(&data->death);
 			pthread_mutex_lock(&data->print);
 			result = get_time() - data->start_time;
 			printf("%ld ms %d %s", result,
@@ -31,6 +33,7 @@ int	is_dead(t_data *data)
 			ft_exit(data);
 			return (0);
 		}
+		pthread_mutex_unlock(&data->death);
 		i++;
 	}
 	return (1);
@@ -54,8 +57,10 @@ int	is_win(t_data *data)
 	if (result == data->num_of_phil && data->win_con != 0)
 	{
 		pthread_mutex_lock(&data->print);
+		pthread_mutex_lock(&data->death);
 		data->d_statu = 1;
 		printf("🤮🤮🤮 Too much spaghetti 🤮🤮🤮\n");
+		pthread_mutex_unlock(&data->death);
 		pthread_mutex_unlock(&data->print);
 		ft_exit(data);
 		return (0);

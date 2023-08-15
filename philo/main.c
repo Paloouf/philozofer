@@ -6,7 +6,7 @@
 /*   By: ltressen <ltressen@student.42perpignan.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/24 10:35:57 by ltressen          #+#    #+#             */
-/*   Updated: 2023/08/10 11:02:12 by ltressen         ###   ########.fr       */
+/*   Updated: 2023/08/15 11:45:30 by ltressen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,8 +53,10 @@ int	is_win(t_data *data)
 	}
 	if (result == data->num_of_phil && data->win_con != 0)
 	{
+		pthread_mutex_lock(&data->print);
 		data->d_statu = 1;
 		printf("🤮🤮🤮 Too much spaghetti 🤮🤮🤮\n");
+		pthread_mutex_unlock(&data->print);
 		ft_exit(data);
 		return (0);
 	}
@@ -66,7 +68,7 @@ void	ft_exit(t_data *data)
 	int	i;
 
 	i = 0;
-	while (i < data->num_of_phil)
+	while (i < data->num_of_phil && data->num_of_phil > 1)
 	{
 		pthread_join(data->phil[i].th_id, NULL);
 		i++;
